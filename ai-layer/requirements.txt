@@ -14,3 +14,4 @@ langgraph
 pandas
 scikit-learn
 langchain-openai
+fastembed

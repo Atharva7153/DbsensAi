@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: dbsense-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /ping
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: USE_LOCAL_LLM
+        value: "false"

@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import fs from 'fs'
 
 // Import routes
 import systemRoutes from './routes/systemRoutes.js'
@@ -24,14 +25,30 @@ let PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5001
 app.use(cors())
 app.use(express.json())
 
-// Mount routes
+// Mount API & System routes
 app.use('/', systemRoutes)
 app.use('/', viewRoutes)
 app.use('/', dbRoutes)
 app.use('/', uploadRoutes)
 app.use('/', analysisRoutes)
 
-// 404 Handler
+// Serve Frontend Static Build if available (Unified Deployment)
+const frontendDistPath = path.resolve(__dirname, '../frontend/dist')
+if (fs.existsSync(frontendDistPath)) {
+  console.log(`📦 Serving frontend static build from ${frontendDistPath}`)
+  app.use(express.static(frontendDistPath))
+
+  // SPA fallback for all HTML GET routes (React Router support)
+  app.get('*', (req, res, next) => {
+    // If it's an API route or ping, let it fall through
+    if (req.path.startsWith('/api') || req.path === '/ping') {
+      return next()
+    }
+    res.sendFile(path.join(frontendDistPath, 'index.html'))
+  })
+}
+
+// 404 Handler for API routes or unhandled requests
 app.use((req, res) => {
   res.status(404).json({
     error: 'Not Found',
@@ -42,9 +59,10 @@ app.use((req, res) => {
 
 // Start Server with Automatic Port Fallback for macOS AirPlay (Port 5000 conflict)
 function startListening(port) {
-  const server = app.listen(port, () => {
-    console.log(`🚀 DBSense Backend running at http://localhost:${port}`)
-    console.log(`📊 Health check: http://localhost:${port}/api/health`)
+  const server = app.listen(port, '0.0.0.0', () => {
+    console.log(`🚀 DBSense Unified Server running at http://0.0.0.0:${port}`)
+    console.log(`📊 Health check: http://0.0.0.0:${port}/api/health`)
+    console.log(`🏓 Ping-pong check: http://0.0.0.0:${port}/ping`)
   })
 
   server.on('error', (err) => {
