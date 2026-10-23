@@ -7,20 +7,25 @@ import AiSettingsModal from './AiSettingsModal'
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [hasDb, setHasDb] = useState(false)
-  const [theme, setTheme] = useState('dark')
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') === 'dark' ? 'dark' : 'cream'
+    }
+    return 'cream'
+  })
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Check initial theme class
+    // Default to white/cream theme unless user explicitly saved 'dark'
     const savedTheme = localStorage.getItem('theme')
-    if (savedTheme === 'cream' || document.documentElement.classList.contains('theme-cream')) {
-      document.documentElement.classList.add('theme-cream')
-      setTheme('cream')
-    } else {
+    if (savedTheme === 'dark') {
       document.documentElement.classList.remove('theme-cream')
       setTheme('dark')
+    } else {
+      document.documentElement.classList.add('theme-cream')
+      setTheme('cream')
     }
   }, [])
 
@@ -31,10 +36,10 @@ export default function Navbar() {
     document.documentElement.style.setProperty('--click-x', `${x}px`)
     document.documentElement.style.setProperty('--click-y', `${y}px`)
 
-    const isDark = theme === 'dark'
+    const isCurrentlyDark = theme === 'dark'
 
     const updateDOM = () => {
-      if (isDark) {
+      if (isCurrentlyDark) {
         document.documentElement.classList.add('theme-cream')
         localStorage.setItem('theme', 'cream')
         setTheme('cream')

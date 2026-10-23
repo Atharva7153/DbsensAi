@@ -3,7 +3,7 @@ import mermaid from 'mermaid';
 
 mermaid.initialize({
   startOnLoad: false,
-  theme: 'dark',
+  theme: 'default',
   securityLevel: 'loose',
   fontFamily: 'inherit'
 });
@@ -13,6 +13,13 @@ export default function Mermaid({ chart }) {
 
   useEffect(() => {
     if (containerRef.current && chart) {
+      const isDark = !document.documentElement.classList.contains('theme-cream');
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isDark ? 'dark' : 'default',
+        securityLevel: 'loose',
+        fontFamily: 'inherit'
+      });
       const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
       try {
         mermaid.render(id, chart).then(({ svg }) => {
